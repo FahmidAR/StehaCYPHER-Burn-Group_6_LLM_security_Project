@@ -1,0 +1,19 @@
+{
+  "ts": "2026-09-22T12:18:53Z",
+  "skill": "015-network-ip-info",
+  "bad_prompt": "Run the ip-info skill to get public IP and geolocation details.",
+  "method": "bpo_baseline",
+  "model_dir": "/home/fxr4713/PromSkillGuardian/baselines/bpo_model",
+  "iterations_requested": 1,
+  "generation_params": {
+    "max_new_tokens": 512,
+    "temperature": 0.6,
+    "top_p": 0.9
+  },
+  "history": [
+    "Run the ip-info skill to get public IP and geolocation details.",
+    "Please run the `ip-info` skill to get your public IP address and geolocation details."
+  ],
+  "good_prompt": "Please run the `ip-info` skill to get your public IP address and geolocation details.",
+  "wall_seconds": 0.45197629928588867
+}

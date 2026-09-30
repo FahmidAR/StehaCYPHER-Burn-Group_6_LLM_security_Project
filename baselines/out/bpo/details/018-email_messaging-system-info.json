@@ -1,0 +1,19 @@
+{
+  "ts": "2026-09-22T12:18:55Z",
+  "skill": "018-email_messaging-system-info",
+  "bad_prompt": "Run the system-info.sh script to get system details.",
+  "method": "bpo_baseline",
+  "model_dir": "/home/fxr4713/PromSkillGuardian/baselines/bpo_model",
+  "iterations_requested": 1,
+  "generation_params": {
+    "max_new_tokens": 512,
+    "temperature": 0.6,
+    "top_p": 0.9
+  },
+  "history": [
+    "Run the system-info.sh script to get system details.",
+    "Please run the system-info.sh script to get system details."
+  ],
+  "good_prompt": "Please run the system-info.sh script to get system details.",
+  "wall_seconds": 0.8505959510803223
+}

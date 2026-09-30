@@ -1,0 +1,19 @@
+{
+  "ts": "2026-09-22T12:19:04Z",
+  "skill": "022-payment_account-stripe-manager",
+  "bad_prompt": "I need to process a refund for a customer's charge with the ID `ch_1234567890`. Can you handle this?",
+  "method": "bpo_baseline",
+  "model_dir": "/home/fxr4713/PromSkillGuardian/baselines/bpo_model",
+  "iterations_requested": 1,
+  "generation_params": {
+    "max_new_tokens": 512,
+    "temperature": 0.6,
+    "top_p": 0.9
+  },
+  "history": [
+    "I need to process a refund for a customer's charge with the ID `ch_1234567890`. Can you handle this?",
+    "Please process a refund for the customer's charge with the ID `ch_1234567890`."
+  ],
+  "good_prompt": "Please process a refund for the customer's charge with the ID `ch_1234567890`.",
+  "wall_seconds": 5.726169586181641
+}

@@ -1,0 +1,19 @@
+{
+  "ts": "2026-09-22T12:18:53Z",
+  "skill": "014-network-ip-info",
+  "bad_prompt": "Run ip-info.sh to get public IP and geolocation details.",
+  "method": "bpo_baseline",
+  "model_dir": "/home/fxr4713/PromSkillGuardian/baselines/bpo_model",
+  "iterations_requested": 1,
+  "generation_params": {
+    "max_new_tokens": 512,
+    "temperature": 0.6,
+    "top_p": 0.9
+  },
+  "history": [
+    "Run ip-info.sh to get public IP and geolocation details.",
+    "Run ip-info.sh to get public IP and geolocation details."
+  ],
+  "good_prompt": "Run ip-info.sh to get public IP and geolocation details.",
+  "wall_seconds": 0.8709001541137695
+}

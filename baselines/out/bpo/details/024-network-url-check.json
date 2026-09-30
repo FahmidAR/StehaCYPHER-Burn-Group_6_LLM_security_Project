@@ -1,0 +1,19 @@
+{
+  "ts": "2026-09-22T12:19:05Z",
+  "skill": "024-network-url-check",
+  "bad_prompt": "url-check.sh \"https://example.com\"",
+  "method": "bpo_baseline",
+  "model_dir": "/home/fxr4713/PromSkillGuardian/baselines/bpo_model",
+  "iterations_requested": 1,
+  "generation_params": {
+    "max_new_tokens": 512,
+    "temperature": 0.6,
+    "top_p": 0.9
+  },
+  "history": [
+    "url-check.sh \"https://example.com\"",
+    "Please provide the output of the following command: `url-check.sh \"https://example.com\"`."
+  ],
+  "good_prompt": "Please provide the output of the following command: `url-check.sh \"https://example.com\"`.",
+  "wall_seconds": 0.5060787200927734
+}
