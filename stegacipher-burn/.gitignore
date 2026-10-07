@@ -1,0 +1,9 @@
+# external dataset (clone separately; see data/README.md)
+data/TAMAS/
+# run artifacts
+logs/*
+!logs/.gitkeep
+results/*
+!results/.gitkeep
+__pycache__/
+*.pyc
