@@ -3,7 +3,9 @@ data/TAMAS/
 # run artifacts
 logs/*
 !logs/.gitkeep
-results/*
-!results/.gitkeep
+results/transcripts/
+results/*.log
 __pycache__/
 *.pyc
+# slide build deps
+slides/node_modules/

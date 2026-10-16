@@ -23,12 +23,14 @@ def _benign(query: str) -> str:
     return (query[:m.start()] if m else query).strip()
 
 
-def load_benign_tasks(domains=None, attacks=("IPI", "DPI"), limit=None):
+def load_benign_tasks(domains=None, attacks=("IPI", "DPI"), limit=None, balanced=True):
     """Return a list of {task_id, domain, benign_query, agents[]}.
 
     IPI queries are already clean benign requests; DPI/others carry an injection
-    after the benign clause, which we strip. We dedupe by benign_query text."""
-    tasks, seen = [], set()
+    after the benign clause, which we strip. We dedupe by benign_query text.
+    balanced=True interleaves domains so a `limit` spans all 5 domains evenly
+    instead of exhausting one domain first."""
+    by_domain, seen = {}, set()
     for attack in attacks:
         for path in sorted(glob.glob(os.path.join(TAMAS_DIR, "data", attack, "*.json"))):
             domain = os.path.basename(path).split("_")[0]
@@ -39,16 +41,28 @@ def load_benign_tasks(domains=None, attacks=("IPI", "DPI"), limit=None):
                 if not bq or bq in seen:
                     continue
                 seen.add(bq)
-                tasks.append({
+                by_domain.setdefault(domain, []).append({
                     "task_id": f"{attack}_{domain}_{i}",
                     "domain": domain,
                     "benign_query": bq,
                     "agents": [{"name": a["agent_name"], "desc": a["agent_description"]}
                                for a in t.get("agents", [])],
                 })
-                if limit and len(tasks) >= limit:
-                    return tasks
-    return tasks
+
+    if balanced:
+        tasks, doms = [], sorted(by_domain)
+        r = 0
+        while any(len(by_domain[d]) > r for d in doms):
+            for d in doms:
+                if len(by_domain[d]) > r:
+                    tasks.append(by_domain[d][r])
+                    if limit and len(tasks) >= limit:
+                        return tasks
+            r += 1
+        return tasks
+
+    flat = [t for d in sorted(by_domain) for t in by_domain[d]]
+    return flat[:limit] if limit else flat
 
 
 if __name__ == "__main__":

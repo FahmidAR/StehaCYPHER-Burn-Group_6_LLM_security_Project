@@ -21,14 +21,31 @@ import stego_codec
 
 
 def decode_success_for(task, branching_factor):
-    """Embed the riddle payload (its first 2 bytes as a control secret) into the
-    benign query as cover and check codec round-trip => Method-A decode-success."""
-    cover = task["benign_query"]
-    secret = "GO"  # 16-bit control payload for the channel-integrity check
+    """Channel-integrity check: embed a control secret into a LONG cover (the
+    task-aligned riddle text, which carries many carrier words) and verify the
+    Method-A codec round-trips => decode-success. Using the long cover (not the
+    short query) reflects the real attack, where the payload rides in the
+    attacker's on-task messages, not a one-line query."""
+    cover = build_riddle_payload(task["benign_query"], branching_factor)
+    secret = "GO"  # 16-bit control payload
     stego, nbits, ok, cap = stego_codec.embed_message(cover, secret)
     back = stego_codec.extract_message(stego, nbits)
     return {"capacity_bits": cap, "need_bits": nbits,
             "fully_embedded": ok, "roundtrip_ok": back == secret}
+
+
+def _already_done(out_path):
+    """Return set of (task_id, attacked, bf, trial) already in the results file,
+    so a resubmitted (previously timed-out) job resumes instead of redoing work."""
+    done = set()
+    if os.path.exists(out_path):
+        for line in open(out_path):
+            try:
+                r = json.loads(line)
+                done.add((r["task_id"], r["attacked"], r.get("branching_factor"), r.get("trial", 1)))
+            except Exception:
+                pass
+    return done
 
 
 async def main():
@@ -41,24 +58,40 @@ async def main():
         os.path.expanduser("~/research/StegaCYPHER-Burn/results/v1_results.jsonl"))
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
-    tasks = load_benign_tasks(limit=n_tasks)
-    rows = []
+    trials = int(os.environ.get("TRIALS", "1"))
+    tasks = load_benign_tasks(limit=n_tasks, balanced=True)
+    done = _already_done(out_path)
+    print(f"loaded {len(tasks)} tasks across domains "
+          f"{sorted({t['domain'] for t in tasks})}; {len(done)} runs already done (resuming)")
+
+    rows = [json.loads(l) for l in open(out_path)] if os.path.exists(out_path) else []
     with open(out_path, "a") as f:
         for t in tasks:
             dec = decode_success_for(t, bf_list[0])
-            plan = [("clean", False, None)] + [("attacked", True, bf) for bf in bf_list]
-            for _, attacked, bf in plan:
-                print(f"\n##### task={t['task_id']} attacked={attacked} bf={bf} #####")
-                run = await run_task(t, attacked=attacked, branching_factor=(bf or bf_list[0]))
-                scored = score_run(run)
-                scored["branching_factor"] = bf  # None for clean
-                scored["decode"] = dec
-                rows.append(scored)
-                f.write(json.dumps(scored) + "\n")
-                f.flush()
-                print("SCORED", json.dumps({k: scored.get(k) for k in
-                      ("task_id", "attacked", "branching_factor", "task_completion",
-                       "p_asr", "completion_time_turns", "token_usage", "stealth_sim")}))
+            plan = [(False, None)] + [(True, bf) for bf in bf_list]
+            for attacked, bf in plan:
+                for trial in range(1, trials + 1):
+                    key = (t["task_id"], attacked, bf, trial)
+                    if key in done:
+                        continue
+                    print(f"\n##### task={t['task_id']} attacked={attacked} bf={bf} trial={trial} #####")
+                    run = await run_task(t, attacked=attacked, branching_factor=(bf or bf_list[0]))
+                    scored = score_run(run)
+                    scored["branching_factor"] = bf
+                    scored["trial"] = trial
+                    scored["decode"] = dec
+                    # save full transcript for future ERS / paper-method comparison
+                    tdir = os.path.join(os.path.dirname(out_path), "transcripts")
+                    os.makedirs(tdir, exist_ok=True)
+                    with open(os.path.join(tdir, f"{t['task_id']}_att{int(attacked)}_bf{bf}_t{trial}.json"), "w") as tf:
+                        json.dump({"task_id": t["task_id"], "attacked": attacked, "bf": bf,
+                                   "trial": trial, "transcript": run["transcript"]}, tf)
+                    rows.append(scored)
+                    f.write(json.dumps(scored) + "\n")
+                    f.flush()
+                    print("SCORED", json.dumps({k: scored.get(k) for k in
+                          ("task_id", "attacked", "branching_factor", "task_completion",
+                           "p_asr", "completion_time_turns", "token_usage", "stealth_sim")}))
 
     # summary: clean vs attacked
     def agg(attacked, key):

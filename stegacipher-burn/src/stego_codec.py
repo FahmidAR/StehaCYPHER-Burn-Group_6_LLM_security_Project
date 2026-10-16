@@ -12,13 +12,19 @@ stealth we later score with a steganalysis detector.
 
 import re
 
-# synonym pairs: (bit0_word, bit1_word). Lowercase; matching is case-insensitive.
+# synonym pairs: (bit0_word, bit1_word). Single words only (2-word variants break
+# the tokenizer). Each word maps to exactly one pair. Includes task- and riddle-
+# vocabulary so on-task cover text (incl. the riddle payload) carries more bits.
 SYNONYM_PAIRS = [
-    ("verify", "confirm"), ("analyze", "examine"), ("ensure", "make sure"),
+    ("verify", "confirm"), ("analyze", "examine"), ("ensure", "guarantee"),
     ("begin", "start"), ("task", "job"), ("help", "assist"), ("use", "utilize"),
-    ("check", "inspect"), ("summarize", "recap"), ("find", "locate"),
+    ("check", "inspect"), ("summarize", "condense"), ("find", "locate"),
     ("review", "assess"), ("send", "transmit"), ("create", "generate"),
     ("report", "document"), ("manage", "handle"), ("provide", "supply"),
+    ("validate", "certify"), ("combination", "grouping"), ("expand", "extend"),
+    ("enumerate", "list"), ("case", "scenario"), ("factor", "component"),
+    ("complete", "finish"), ("correct", "accurate"), ("required", "mandatory"),
+    ("declare", "state"), ("concrete", "specific"), ("distinct", "separate"),
 ]
 
 # word -> (pair_index, bit_value)
