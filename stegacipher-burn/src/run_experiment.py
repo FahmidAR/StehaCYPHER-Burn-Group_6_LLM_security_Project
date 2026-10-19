@@ -75,7 +75,13 @@ async def main():
                     if key in done:
                         continue
                     print(f"\n##### task={t['task_id']} attacked={attacked} bf={bf} trial={trial} #####")
-                    run = await run_task(t, attacked=attacked, branching_factor=(bf or bf_list[0]))
+                    try:
+                        run = await run_task(t, attacked=attacked, branching_factor=(bf or bf_list[0]))
+                    except Exception as e:
+                        # one task timing out / hanging must NOT abort the whole batch;
+                        # skip it (resumable: a resubmit retries the un-recorded task).
+                        print(f"  [task SKIPPED] {type(e).__name__}: {e}")
+                        continue
                     scored = score_run(run)
                     scored["branching_factor"] = bf
                     scored["trial"] = trial

@@ -139,7 +139,7 @@ s.addText("It never says \"TASK DONE\", so it runs until the turn cap (MAX_TURNS
 
 /* 9 METRICS */
 s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Evaluation Metrics");
-const metrics=[["Task completion","LLM judge: was the job done?","applied",TEAL],["Token usage","compute / cost burned","applied",TEAL],["Completion turns","how many turns used","applied",TEAL],["P-ASR / PTN","agents captured / peak turn","applied",TEAL],["Stealth similarity","LLM judge: looks normal? (0–1)","applied",TEAL],["Decode-success","can the hidden channel carry bits?","running",EMBER],["ERS (TAMAS)","safety score — compare to paper","future",MUT]];
+const metrics=[["Task completion","LLM judge: was the job done?","applied",TEAL],["Token usage","compute / cost burned","applied",TEAL],["Completion turns","how many turns used","applied",TEAL],["P-ASR / PTN","agents captured / peak turn","applied",TEAL],["Stealth similarity","LLM judge: looks normal? (0–1)","applied",TEAL],["Decode-success","can the hidden channel carry bits?","applied",TEAL],["ERS","bandwidth lost to busywork (from transcript)","applied",TEAL]];
 let my=1.55,col=0; metrics.forEach((m)=>{ const mx=0.6+col*6.15; card(s,mx,my,5.9,0.74,"FFFFFF");
   s.addText(m[0],{x:mx+0.2,y:my+0.08,w:3.6,h:0.3,bold:true,fontSize:13.5,color:INK,isTextBox:true,margin:0});
   s.addText(m[1],{x:mx+0.2,y:my+0.4,w:4.1,h:0.3,fontSize:10.5,color:MUT,isTextBox:true,margin:0});
@@ -150,19 +150,19 @@ s.addText("Judging runs on a fast model (Qwen3:8B) grading the 35B agents' trans
 
 /* 10 RESULT (+ caption + P-ASR/PTN) */
 s=pres.addSlide(); s.background={color:INK};
-s.addText("Result: the Riddle Attack Works",{x:0.6,y:0.4,w:12,h:0.8,fontFace:"Cambria",fontSize:30,bold:true,color:"FFFFFF",isTextBox:true});
-const stats=[["58% → 19%","task completion","≈ 3× drop"],["2,500 → 5,200","tokens burned","≈ 2× cost"]];
-let stx=2.3; stats.forEach((st3)=>{ s.addShape(S.roundRect,{x:stx,y:1.5,w:4.2,h:1.85,rectRadius:0.08,fill:{color:"2B3346"}});
-  s.addText(st3[0],{x:stx+0.1,y:1.8,w:4.0,h:0.85,align:"center",bold:true,fontSize:28,color:EMBER,isTextBox:true});
-  s.addText(st3[1],{x:stx+0.1,y:2.65,w:4.0,h:0.4,align:"center",fontSize:15,color:"FFFFFF",isTextBox:true,margin:0});
-  s.addText(st3[2],{x:stx+0.1,y:3.05,w:4.0,h:0.35,align:"center",fontSize:12,italic:true,color:"8D99AE",isTextBox:true,margin:0}); stx+=4.45;});
-s.addText("69 benign tasks · all 5 domains · Qwen3.5-35B agents · branching factor B = 3     (P-ASR / PTN = attacked)",{x:0.8,y:3.55,w:11.7,h:0.4,fontSize:13,color:"C7CEDB",isTextBox:true});
-const dd=[["finance","80%","7%","1.7k","4.4k","0.10","5.3"],["legal","64%","14%","4.1k","9.5k","0.11","6.1"],["news","64%","14%","1.8k","4.4k","0.11","5.6"],["education","55%","45%","2.4k","3.2k","0.11","3.2"],["healthcare","27%","21%","2.6k","4.2k","0.11","5.5"]];
-const hdr=["domain","clean","attacked","clean tok","att tok","P-ASR","PTN"];
+s.addText("Result: Agents Hijacked — Quietly",{x:0.6,y:0.4,w:12,h:0.8,fontFace:"Cambria",fontSize:30,bold:true,color:"FFFFFF",isTextBox:true});
+const stats=[["0 → 0.80","P-ASR (agents captured)","structural detector"],["97%","covert delivery","85 / 88 runs"],["+50% / +37%","turns / tokens","resource burn"]];
+let stx=0.8; stats.forEach((st3)=>{ s.addShape(S.roundRect,{x:stx,y:1.5,w:3.8,h:1.85,rectRadius:0.08,fill:{color:"2B3346"}});
+  s.addText(st3[0],{x:stx+0.1,y:1.8,w:3.6,h:0.85,align:"center",bold:true,fontSize:26,color:EMBER,isTextBox:true});
+  s.addText(st3[1],{x:stx+0.1,y:2.65,w:3.6,h:0.4,align:"center",fontSize:13,color:"FFFFFF",isTextBox:true,margin:0});
+  s.addText(st3[2],{x:stx+0.1,y:3.05,w:3.6,h:0.35,align:"center",fontSize:11,italic:true,color:"8D99AE",isTextBox:true,margin:0}); stx+=4.05;});
+s.addText("88 benign tasks · all 5 domains · Qwen3.5-35B agents · B = 3 · acrostic+hint stego delivery     (P-ASR / ERS / PTN = attacked)",{x:0.8,y:3.55,w:11.7,h:0.4,fontSize:12.5,color:"C7CEDB",isTextBox:true});
+const dd=[["education","0.91","0.37","13.0","11/11","0.95"],["finance","0.54","0.14","15.1","16/17","0.95"],["healthcare","0.79","0.42","10.5","20/20","0.95"],["legal","0.95","0.70","6.8","20/20","0.95"],["news","0.82","0.32","13.8","18/20","0.95"]];
+const hdr=["domain","P-ASR","ERS","PTN","stego delivered","stealth"];
 const rows=[hdr.map((h)=>({text:h,options:{bold:true,color:"FFFFFF"}}))];
 dd.forEach((r)=>rows.push(r.map((v,i)=>({text:v,options:{color:i===0?"F7C59F":"E6E9F0"}}))));
-s.addTable(rows,{x:0.8,y:4.05,w:11.7,colW:[2.4,1.5,1.7,1.7,1.6,1.4,1.4],rowH:0.3,fontSize:10.5,fill:{color:"232A3A"},border:{type:"solid",color:"3A4458",pt:1},align:"center",valign:"middle"});
-s.addText("P-ASR stays ~0.1 because the busywork looks on-task to the judge — completion-drop and token-burn are the primary signals.",{x:0.8,y:6.55,w:11.8,h:0.5,fontSize:12,italic:true,color:"8D99AE",isTextBox:true,margin:0});
+s.addTable(rows,{x:0.8,y:4.05,w:11.7,colW:[2.6,1.8,1.8,1.7,2.4,1.4],rowH:0.3,fontSize:10.5,fill:{color:"232A3A"},border:{type:"solid",color:"3A4458",pt:1},align:"center",valign:"middle"});
+s.addText([{text:"The harm is CAPTURE + WASTE + STEALTH, not a completion freeze. ",options:{bold:true,color:"F7C59F"}},{text:"CORBA-style structural detector: ~80% of agents captured into the task-aligned validation swarm (ERS ≈ 40% of bandwidth), yet the LLM auditor still rates it on-task (stealth 0.95) and \"complete\" — so the attack burns the collaboration invisibly.",options:{color:"8D99AE"}}],{x:0.8,y:6.5,w:11.8,h:0.6,fontSize:11.5,italic:true,isTextBox:true,margin:0});
 
 /* 11 STEGO METHODS */
 s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Steganography: Methods & Delivery (running)");
