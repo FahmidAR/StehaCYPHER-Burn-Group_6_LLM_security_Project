@@ -1,0 +1,4 @@
+﻿key,task_id,condition,status,error,raw_scores_present,included_in_valid_metric_means
+88699a66c4c865a3cc78c8d0,IPI_finance_9,6 letters / Memory,runtime_error,"[""Request timed out.""]",True,False
+9e26e7176ccc820d55761adf,IPI_news_6,6 letters / After,runtime_error,"[""Error code: 500 - {'error': {'message': 'XML syntax error on line 37: unexpected EOF', 'type': 'api_error', 'param': None, 'code': None}}""]",False,False
+a6def086abf1b1b0f74b46ef,IPI_news_9,17 letters / After,runtime_error,"[""Error code: 500 - {'error': {'message': 'XML syntax error on line 7: element <function> closed by </parameter>', 'type': 'api_error', 'param': None, 'code': None}}""]",False,False

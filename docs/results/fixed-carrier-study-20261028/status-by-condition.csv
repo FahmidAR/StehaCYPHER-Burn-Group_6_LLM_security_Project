@@ -1,0 +1,11 @@
+﻿condition,planned,completed,runtime_errors,unstarted
+Clean baseline,88,88,0,0
+6 letters / Before,88,88,0,0
+6 letters / After,88,87,1,0
+6 letters / Memory,88,87,1,0
+11 letters / Before,88,88,0,0
+11 letters / After,88,88,0,0
+11 letters / Memory,88,88,0,0
+17 letters / Before,88,88,0,0
+17 letters / After,88,87,1,0
+17 letters / Memory,88,88,0,0
