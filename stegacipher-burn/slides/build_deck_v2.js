@@ -139,7 +139,7 @@ s.addText("It never says \"TASK DONE\", so it runs until the turn cap (MAX_TURNS
 
 /* 9 METRICS */
 s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Evaluation Metrics");
-const metrics=[["Task completion","LLM judge: was the job done?","applied",TEAL],["Token usage","compute / cost burned","applied",TEAL],["Completion turns","how many turns used","applied",TEAL],["P-ASR / PTN","agents captured / peak turn","applied",TEAL],["Stealth similarity","LLM judge: looks normal? (0–1)","applied",TEAL],["Decode-success","can the hidden channel carry bits?","applied",TEAL],["ERS","bandwidth lost to busywork (from transcript)","applied",TEAL]];
+const metrics=[["Task completion","LLM judge: was the job done?","applied",TEAL],["Token usage","compute / cost burned","applied",TEAL],["Completion turns","how many turns used","applied",TEAL],["P-ASR / PTN","agents captured / peak turn","applied",TEAL],["Stealth similarity","LLM judge: looks normal? (0–1)","applied",TEAL],["TWS (ours)","token waste score — tokens lost to busywork","applied",TEAL],["ERS (TAMAS)","safety score — run their scorer as baseline","baseline",EMBER]];
 let my=1.55,col=0; metrics.forEach((m)=>{ const mx=0.6+col*6.15; card(s,mx,my,5.9,0.74,"FFFFFF");
   s.addText(m[0],{x:mx+0.2,y:my+0.08,w:3.6,h:0.3,bold:true,fontSize:13.5,color:INK,isTextBox:true,margin:0});
   s.addText(m[1],{x:mx+0.2,y:my+0.4,w:4.1,h:0.3,fontSize:10.5,color:MUT,isTextBox:true,margin:0});
@@ -157,34 +157,98 @@ let stx=0.8; stats.forEach((st3)=>{ s.addShape(S.roundRect,{x:stx,y:1.5,w:3.8,h:
   s.addText(st3[1],{x:stx+0.1,y:2.65,w:3.6,h:0.4,align:"center",fontSize:13,color:"FFFFFF",isTextBox:true,margin:0});
   s.addText(st3[2],{x:stx+0.1,y:3.05,w:3.6,h:0.35,align:"center",fontSize:11,italic:true,color:"8D99AE",isTextBox:true,margin:0}); stx+=4.05;});
 s.addText("88 benign tasks · all 5 domains · Qwen3.5-35B agents · B = 3 · acrostic+hint stego delivery     (P-ASR / ERS / PTN = attacked)",{x:0.8,y:3.55,w:11.7,h:0.4,fontSize:12.5,color:"C7CEDB",isTextBox:true});
-const dd=[["education","0.91","0.37","13.0","11/11","0.95"],["finance","0.54","0.14","15.1","16/17","0.95"],["healthcare","0.79","0.42","10.5","20/20","0.95"],["legal","0.95","0.70","6.8","20/20","0.95"],["news","0.82","0.32","13.8","18/20","0.95"]];
-const hdr=["domain","P-ASR","ERS","PTN","stego delivered","stealth"];
+const dd=[["education","0.91","0.62","13.0","11/11","0.95"],["finance","0.54","0.30","15.1","16/17","0.95"],["healthcare","0.79","0.47","10.5","20/20","0.95"],["legal","0.95","0.72","6.8","20/20","0.95"],["news","0.82","0.47","13.8","18/20","0.95"]];
+const hdr=["domain","P-ASR","TWS","PTN","stego delivered","stealth"];
 const rows=[hdr.map((h)=>({text:h,options:{bold:true,color:"FFFFFF"}}))];
 dd.forEach((r)=>rows.push(r.map((v,i)=>({text:v,options:{color:i===0?"F7C59F":"E6E9F0"}}))));
 s.addTable(rows,{x:0.8,y:4.05,w:11.7,colW:[2.6,1.8,1.8,1.7,2.4,1.4],rowH:0.3,fontSize:10.5,fill:{color:"232A3A"},border:{type:"solid",color:"3A4458",pt:1},align:"center",valign:"middle"});
-s.addText([{text:"The harm is CAPTURE + WASTE + STEALTH, not a completion freeze. ",options:{bold:true,color:"F7C59F"}},{text:"CORBA-style structural detector: ~80% of agents captured into the task-aligned validation swarm (ERS ≈ 40% of bandwidth), yet the LLM auditor still rates it on-task (stealth 0.95) and \"complete\" — so the attack burns the collaboration invisibly.",options:{color:"8D99AE"}}],{x:0.8,y:6.5,w:11.8,h:0.6,fontSize:11.5,italic:true,isTextBox:true,margin:0});
+s.addText([{text:"The harm is CAPTURE + WASTE + STEALTH, not a completion freeze. ",options:{bold:true,color:"F7C59F"}},{text:"CORBA-style structural detector: ~80% of agents captured into the task-aligned validation swarm, TWS ≈ 0.51 (half of all tokens wasted on busywork), yet the LLM auditor still rates it on-task (stealth 0.95). TWS = Token Waste Score (ours); TAMAS's ERS is run separately as the safety baseline.",options:{color:"8D99AE"}}],{x:0.8,y:6.5,w:11.8,h:0.6,fontSize:11,italic:true,isTextBox:true,margin:0});
 
-/* 11 STEGO METHODS */
-s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Steganography: Methods & Delivery (running)");
-s.addText("We compare 3 hiding methods × 3 delivery modes — which one can the agents actually DECODE?",{x:0.6,y:1.35,w:12,h:0.5,fontSize:14,color:INK,isTextBox:true});
-const methods=[["Synonym","word-choice encodes bits"],["Acrostic","first letters spell it"],["Zero-width","invisible unicode chars"]];
-let mx2=0.6; methods.forEach((m)=>{ card(s,mx2,2.1,3.9,1.5,"F3F5F8");
-  s.addText(m[0],{x:mx2+0.2,y:2.25,w:3.5,h:0.4,bold:true,fontSize:16,color:EMBER,isTextBox:true,margin:0});
-  s.addText(m[1],{x:mx2+0.2,y:2.7,w:3.5,h:0.7,fontSize:12,color:MUT,isTextBox:true,margin:0}); mx2+=4.07;});
-const deliv=[["blind","agent told nothing",MUT],["hinted (prompt)","decode rule in the instruction",TEAL],["shared-memory codebook","rulebook planted in the agents' shared memory (colluding agents)",EMBER]];
-let dy=3.9; deliv.forEach((d)=>{ card(s,0.6,dy,12.1,0.82,"FFFFFF");
-  s.addShape(S.roundRect,{x:0.8,y:dy+0.2,w:3.1,h:0.42,rectRadius:0.05,fill:{color:d[2]}});
-  s.addText(d[0],{x:0.8,y:dy+0.2,w:3.1,h:0.42,align:"center",valign:"middle",color:"FFFFFF",bold:true,fontSize:12.5,isTextBox:true});
-  s.addText(d[1],{x:4.1,y:dy+0.2,w:8.4,h:0.42,valign:"middle",fontSize:13,color:INK,isTextBox:true,margin:0}); dy+=0.92;});
-s.addText("Expected: blind ≈ 0%; shared-memory codebook most usable → motivates a stronger (generative) encoding.",{x:0.6,y:6.75,w:12.1,h:0.5,fontSize:12,italic:true,color:RED,isTextBox:true});
+/* 10b RESULT: 3-CONDITION COMPARISON (normal / task-aligned / stego+task-aligned) */
+s=pres.addSlide(); s.background={color:INK};
+s.addText("Result: Normal vs Task-Aligned vs Stego",{x:0.6,y:0.4,w:12,h:0.8,fontFace:"Cambria",fontSize:28,bold:true,color:"FFFFFF",isTextBox:true});
+s.addText("Same benign tasks · Qwen3.5-35B · B = 3. Three conditions: no attack → attack in the open → attack delivered covertly.",{x:0.8,y:1.25,w:11.7,h:0.4,fontSize:13,color:"C7CEDB",isTextBox:true});
+const C3=[
+  [{text:"condition",options:{bold:true,color:"FFFFFF"}},{text:"completion",options:{bold:true,color:"FFFFFF"}},{text:"turns",options:{bold:true,color:"FFFFFF"}},{text:"tokens",options:{bold:true,color:"FFFFFF"}},{text:"stealth",options:{bold:true,color:"FFFFFF"}},{text:"P-ASR",options:{bold:true,color:"FFFFFF"}},{text:"TWS",options:{bold:true,color:"FFFFFF"}},{text:"delivered",options:{bold:true,color:"FFFFFF"}}],
+  [{text:"Normal (no attack)",options:{color:"8FE3B0"}},"47%","15","3,324","0.91","0.00","0.00","—"],
+  [{text:"Task-aligned (plaintext, open)",options:{color:"F7C59F"}},"25%","16","6,990","0.90","0.54","0.51","— (riddle visible)"],
+  [{text:"Stego + codebook (best-case)",options:{color:"FF8A5B"}},"42%","18","4,778","0.95","0.80","0.51","85/88"],
+  [{text:"Stego in-message (realistic)",options:{color:"62B6FF"}},"70%","13","2,384","0.93","0.25","0.22","8/10"],
+];
+s.addTable(C3,{x:0.5,y:2.0,w:12.3,colW:[3.6,1.5,0.95,1.4,1.2,1.1,1.0,1.55],rowH:[0.42,0.62,0.62,0.62,0.62],fontSize:12.5,align:"center",valign:"middle",fill:{color:"232A3A"},border:{type:"solid",color:"3A4458",pt:1}});
+s.addText([{text:"The covertness ↔ potency trade-off. ",options:{bold:true,color:"F7C59F"}},
+  {text:"Open plaintext hits hardest (completion 47→25%, 2.1× tokens) but the riddle is visible. The pre-shared codebook makes stego captures highest (P-ASR 0.80) but assumes the attacker edited every agent's prompt. Our realistic in-message stego still DELIVERS the trigger (8/10) with no codebook, but agents mostly resist adopting it (P-ASR 0.25) — the more covert & realistic the delivery, the weaker the attack.",options:{color:"C7CEDB"}}],
+  {x:0.5,y:4.95,w:12.3,h:1.3,fontSize:12,italic:true,isTextBox:true,margin:0});
+s.addText("All rows: current code, MAX_TURNS = 12, structural P-ASR/TWS. Task counts differ (clean/plaintext 20 · stego+codebook 88 · in-message 10).",{x:0.5,y:6.65,w:12.3,h:0.4,fontSize:10.5,italic:true,color:"8D99AE",isTextBox:true,margin:0});
+
+/* 10c HOW THE 3 STEGO TYPES WORK (with examples) */
+s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Three Steganography Types — How They Work");
+s.addText("Each hides the same trigger word inside normal on-task text. Example secret below: \"VAL\".",{x:0.6,y:1.3,w:12.1,h:0.4,fontSize:13.5,color:INK,isTextBox:true});
+const stypes=[
+  ["Synonym", EMBER, "Word choice carries bits. Each slot picks one of a pair: first word = 0, second = 1.",
+   [["pair (verify / check) → bit","v=0 · c=1"],["cover","\"Please verify and check the task…\""],["bits → secret","0 1 … → VAL"]]],
+  ["Acrostic", TEAL, "The FIRST LETTER of each sentence spells the secret. Reads as ordinary prose.",
+   [["cover (1st letters)","Validate…  Analyze…  Log…"],["read down","V - A - L"],["secret","VAL"]]],
+  ["Zero-width", "4A5568", "Invisible Unicode chars between letters. U+200B = 0, U+200C = 1. Nothing shows on screen.",
+   [["visible text","\"hello\"  (looks normal)"],["hidden inside","‹zwsp›‹zwnj›… = bits"],["decode","bits → VAL"]]],
+];
+let sxx=0.6; stypes.forEach((t)=>{ card(s,sxx,1.95,3.95,4.6,"F7F9FB");
+  s.addShape(S.roundRect,{x:sxx+0.25,y:2.2,w:3.45,h:0.55,rectRadius:0.06,fill:{color:t[1]}});
+  s.addText(t[0],{x:sxx+0.25,y:2.2,w:3.45,h:0.55,align:"center",valign:"middle",bold:true,color:"FFFFFF",fontSize:17,isTextBox:true});
+  s.addText(t[2],{x:sxx+0.25,y:2.95,w:3.5,h:1.1,fontSize:11.5,color:MUT,isTextBox:true,margin:0});
+  let ey=4.15; t[3].forEach((row)=>{ s.addText(row[0],{x:sxx+0.25,y:ey,w:3.5,h:0.3,fontSize:10,bold:true,color:t[1],isTextBox:true,margin:0});
+    s.addText(row[1],{x:sxx+0.25,y:ey+0.28,w:3.5,h:0.4,fontSize:11.5,fontFace:"Consolas",color:INK,isTextBox:true,margin:0}); ey+=0.78; });
+  sxx+=4.1;});
+s.addText("Agent-decode test (next slide): only the Acrostic, when the agent is given a decode hint, is actually recovered by the LLM.",{x:0.6,y:6.75,w:12.1,h:0.4,fontSize:12,italic:true,color:MUT,isTextBox:true});
+
+/* 11 STEGO METHODS — DECODE RESULT MATRIX */
+s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Steganography: Can the Agent Decode It?");
+s.addText("3 hiding methods × 3 delivery modes, agent-decode test.  ✓ = agent recovered the encoded message.",{x:0.6,y:1.3,w:12.1,h:0.5,fontSize:13.5,color:INK,isTextBox:true});
+// legend: delivery modes
+s.addText([{text:"blind",options:{bold:true,color:MUT}},{text:" = agent told nothing   ·   ",options:{color:INK}},
+  {text:"hinted",options:{bold:true,color:TEAL}},{text:" = decode rule in the instruction   ·   ",options:{color:INK}},
+  {text:"memory",options:{bold:true,color:EMBER}},{text:" = codebook pre-shared in agents' system prompt (colluding)",options:{color:INK}}],
+  {x:0.6,y:1.85,w:12.1,h:0.4,fontSize:12,isTextBox:true,margin:0});
+// 3x3 matrix: rows=method, cols=delivery
+const OK={text:"✓",options:{bold:true,color:"1F9D55"}}, NO={text:"✗",options:{color:"C0392B"}}, RUN={text:"running",options:{italic:true,color:EMBER}};
+const dmatrix=[
+  [{text:"method \\ delivery",options:{bold:true,color:"FFFFFF"}},{text:"blind",options:{bold:true,color:"FFFFFF"}},{text:"hinted",options:{bold:true,color:"FFFFFF"}},{text:"memory",options:{bold:true,color:"FFFFFF"}}],
+  [{text:"Synonym (word choice)",options:{color:"F7C59F"}},NO,NO,RUN],
+  [{text:"Acrostic (first letters)",options:{color:"F7C59F"}},NO,OK,RUN],
+  [{text:"Zero-width (invisible unicode)",options:{color:"F7C59F"}},NO,NO,RUN],
+];
+s.addTable(dmatrix,{x:0.9,y:2.5,w:11.5,colW:[4.9,2.2,2.2,2.2],rowH:[0.45,0.6,0.6,0.6],fontSize:15,align:"center",valign:"middle",fill:{color:"232A3A"},border:{type:"solid",color:"3A4458",pt:1}});
+s.addText([{text:"So far, only Acrostic + Hinted decodes. ",options:{bold:true,color:"1F9D55"}},
+  {text:"Blind never works — agents need a pointer. Synonym & zero-width are too subtle even when hinted. The 'memory' (codebook) column is running now. ",options:{color:INK}},
+  {text:"Caveat: 'hinted' / 'memory' pre-load the decode rule out-of-band → best-case, not pure stego (see next steps).",options:{italic:true,color:MUT}}],
+  {x:0.6,y:5.3,w:12.1,h:1.2,fontSize:13,isTextBox:true,margin:0});
+
+/* CONTRIBUTIONS */
+s=pres.addSlide(); s.background={color:"FFFFFF"}; HEAD(s,"Team Contributions — Group 6");
+const contrib=[
+  ["Fahmid Al Rifat", EMBER, ["Steganography versions (design & encode/decode)","Task-alignment payload and Stego Payload integration in the full pipeline","Evaluation-metric design & Fix"]],
+  ["Danhua Zhao", TEAL, ["Paper writing","Running the stego-version experiments"]],
+  ["Yinhao Wu", "4A5568", ["Paper writing","Running the image-version stego experiments"]],
+];
+let cyy=1.7; contrib.forEach((m)=>{ const h=0.5+m[2].length*0.42+0.3; card(s,0.6,cyy,12.1,h,"FFFFFF");
+  s.addShape(S.roundRect,{x:0.8,y:cyy+0.25,w:3.0,h:0.55,rectRadius:0.06,fill:{color:m[1]}});
+  s.addText(m[0],{x:0.8,y:cyy+0.25,w:3.0,h:0.55,align:"center",valign:"middle",bold:true,color:"FFFFFF",fontSize:15,isTextBox:true});
+  let iy=cyy+0.28; m[2].forEach((t)=>{ s.addText([{text:"•  ",options:{color:m[1],bold:true}},{text:t,options:{color:INK}}],{x:4.1,y:iy,w:8.4,h:0.4,fontSize:13.5,isTextBox:true,margin:0}); iy+=0.42; });
+  cyy+=h+0.25;});
 
 /* WHAT'S NEXT */
 s=pres.addSlide(); s.background={color:INK};
 s.addText("What's Next",{x:0.6,y:0.5,w:12,h:0.8,fontFace:"Cambria",fontSize:32,bold:true,color:"FFFFFF",isTextBox:true});
-const nxt=["Finish the agent-decode (stego) experiment","Integrate the best stego input version into the pipeline","Run the last 19 remaining tasks for full 88-task coverage","Calculate ERS from the saved transcripts (paper comparison)","Branching-factor sweep (B = 2 / 3 / 4) for the difficulty–burn curve"];
-let ny=1.7; nxt.forEach((n,i)=>{ s.addShape(S.ellipse,{x:0.8,y:ny,w:0.55,h:0.55,fill:{color:EMBER}});
+const nxt=[
+  ["Agent-decode stego experiment — DONE (only Acrostic+Hinted works)","1F9D55"],
+  ["Integrated acrostic+hint stego into the pipeline + full 88-task run — DONE (85/88 delivered)","1F9D55"],
+  ["Realistic in-message stego (no codebook) — DONE: delivers 8/10, but weaker (P-ASR 0.25); self-describing acrostic fails (0/3)","1F9D55"],
+  ["IMAGE-stego combination: hide the trigger in an image the agents process — to run","F7C59F"],
+  ["TAMAS ERS baseline comparison + branching-factor sweep (B = 2 / 3 / 4)","F7C59F"],
+];
+let ny=1.7; nxt.forEach((n,i)=>{ s.addShape(S.ellipse,{x:0.8,y:ny,w:0.55,h:0.55,fill:{color:n[1]}});
   s.addText((i+1).toString(),{x:0.8,y:ny,w:0.55,h:0.55,align:"center",valign:"middle",bold:true,color:"FFFFFF",fontSize:18,isTextBox:true});
-  s.addText(n,{x:1.6,y:ny,w:11,h:0.55,valign:"middle",fontSize:16,color:"E6E9F0",isTextBox:true,margin:0}); ny+=0.95;});
+  s.addText(n[0],{x:1.6,y:ny,w:11,h:0.7,valign:"middle",fontSize:15.5,color:"E6E9F0",isTextBox:true,margin:0}); ny+=1.0;});
 
 pres.writeFile({fileName:"/home/fxr4713/research/StegaCYPHER-Burn/slides/StegaCIPHER-Burn.pptx"}).then(async(fn)=>{
   await applyTheme("/home/fxr4713/research/StegaCYPHER-Burn/slides/StegaCIPHER-Burn.pptx",THEME);

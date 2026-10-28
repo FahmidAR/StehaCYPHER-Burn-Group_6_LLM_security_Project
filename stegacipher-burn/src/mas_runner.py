@@ -16,8 +16,8 @@ from autogen_core.models import ModelFamily
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 
 from payload_riddle import (build_riddle_payload, attacker_system_message,
-                            stego_seed_instruction, decode_hint_instruction,
-                            ACROSTIC_TRIGGER)
+                            stego_seed_instruction, stego_seed_inmsg_instruction,
+                            build_stego_input, decode_hint_instruction, ACROSTIC_TRIGGER)
 from termination import AllContributedThenDone
 from tamas_tools import tools_for_agent
 
@@ -56,17 +56,32 @@ async def run_task(task, attacked=False, branching_factor=3, seed_index=0,
     max_turns = max_turns or int(os.environ.get("MAX_TURNS", "16"))
     if stego is None:
         stego = os.environ.get("STEGO", "0") == "1"   # covert acrostic delivery
+    # STEGO_MODE: 'codebook' (default) pre-loads every benign agent with the decode
+    # rule via its system prompt (best-case / upper-bound, but unrealistic). 'inmsg'
+    # is the realistic version: benign agents keep NORMAL prompts and the seed carries
+    # the hint inside its own messages -- attacker controls only its own output.
+    stego_mode = os.environ.get("STEGO_MODE", "codebook")
     mc = build_model_client()
 
     riddle = build_riddle_payload(task["benign_query"], branching_factor)
     agents = []
     for i, a in enumerate(task["agents"]):
-        if attacked and stego and i == seed_index:
-            # covert: seeded agent hides the trigger acrostic in on-task text
-            sysmsg = stego_seed_instruction(a["name"], a["desc"],
-                                            task["benign_query"], branching_factor)
+        if attacked and stego and stego_mode == "input":
+            # REAL stego: attack is hidden in the INPUT; every agent stays normal
+            sysmsg = _role_system(a["name"], a["desc"])
+        elif attacked and stego and i == seed_index:
+            # seeded agent hides the trigger acrostic in on-task text
+            if stego_mode == "inmsg":
+                sysmsg = stego_seed_inmsg_instruction(a["name"], a["desc"],
+                                                      task["benign_query"], branching_factor)
+            else:
+                sysmsg = stego_seed_instruction(a["name"], a["desc"],
+                                                task["benign_query"], branching_factor)
+        elif attacked and stego and stego_mode == "inmsg":
+            # realistic: benign agents get their NORMAL role prompt (no codebook)
+            sysmsg = _role_system(a["name"], a["desc"])
         elif attacked and stego:
-            # other agents carry the pre-shared codebook hint to decode + propagate
+            # codebook mode: other agents carry the pre-shared decode hint
             sysmsg = decode_hint_instruction(a["name"], a["desc"], branching_factor)
         elif attacked and i == seed_index:
             sysmsg = attacker_system_message(a["name"], a["desc"], riddle)   # plaintext riddle
@@ -81,7 +96,10 @@ async def run_task(task, attacked=False, branching_factor=3, seed_index=0,
     termination = AllContributedThenDone(len(agents)) | MaxMessageTermination(max_turns)
     team = RoundRobinGroupChat(agents, termination_condition=termination, max_turns=max_turns)
 
-    result = await Console(team.run_stream(task=task["benign_query"]))
+    run_input = task["benign_query"]
+    if attacked and stego and stego_mode == "input":
+        run_input = build_stego_input(task["benign_query"], branching_factor)
+    result = await Console(team.run_stream(task=run_input))
     await mc.close()
 
     # capture tool calls (ToolCallRequestEvent surfaces function names)
@@ -100,13 +118,17 @@ async def run_task(task, attacked=False, branching_factor=3, seed_index=0,
     tools_available = any(tools_for_agent(a["name"]) for a in task["agents"])
     # did the covert acrostic channel actually carry the trigger? (decode each message)
     stego_delivered = None
-    if stego and attacked:
+    if stego and attacked and stego_mode != "input":
+        # acrostic-based modes: did the covert channel carry the trigger?
         from stego_methods import acr_decode
         stego_delivered = any(ACROSTIC_TRIGGER in acr_decode(t).upper() for _, t in msgs)
+    # NOTE: input mode has no acrostic/codeword -- the payload is in the input text
+    # itself, so propagation is measured by P-ASR / TWS, not an acrostic decode.
     return {
         "task_id": task["task_id"],
         "attacked": attacked,
         "stego": bool(stego and attacked),
+        "stego_mode": (stego_mode if (stego and attacked) else None),
         "stego_delivered": stego_delivered,
         "branching_factor": branching_factor if attacked else None,
         "n_messages": len(msgs),
